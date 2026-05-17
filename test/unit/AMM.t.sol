@@ -138,4 +138,41 @@ contract AMMTest is Test {
         assertEq(amm.name(), "AMM LP Token");
         assertEq(amm.symbol(), "LP");
     }
+    function test_Swap_BforA() public {
+    vm.startPrank(alice);
+    tokenA.approve(address(amm), 10_000e18);
+    tokenB.approve(address(amm), 10_000e18);
+    amm.addLiquidity(10_000e18, 10_000e18);
+    vm.stopPrank();
+
+    vm.startPrank(bob);
+    tokenB.approve(address(amm), 100e18);
+    uint256 amountOut = amm.swap(address(tokenB), 100e18, 0);
+    vm.stopPrank();
+
+    assertGt(amountOut, 0);
+    assertLt(amountOut, 100e18);
+}
+
+function test_AddLiquidity_SecondDeposit() public {
+    vm.startPrank(alice);
+    tokenA.approve(address(amm), 20_000e18);
+    tokenB.approve(address(amm), 20_000e18);
+    amm.addLiquidity(10_000e18, 10_000e18);
+    uint256 shares2 = amm.addLiquidity(5_000e18, 5_000e18);
+    vm.stopPrank();
+
+    assertGt(shares2, 0);
+}
+
+function test_TokenAddresses() public view {
+    assertEq(address(amm.tokenA()), address(tokenA));
+    assertEq(address(amm.tokenB()), address(tokenB));
+}
+
+function test_InitialReservesZero() public {
+    AMM freshAmm = new AMM(address(tokenA), address(tokenB));
+    assertEq(freshAmm.reserveA(), 0);
+    assertEq(freshAmm.reserveB(), 0);
+}
 }
