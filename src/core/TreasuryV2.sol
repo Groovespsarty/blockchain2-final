@@ -27,9 +27,7 @@ contract TreasuryV2 is TreasuryV1 {
         emit Unpaused(msg.sender);
     }
 
-    function deposit(address token, uint256 amount)
-        external override nonReentrant whenNotPaused
-    {
+    function deposit(address token, uint256 amount) external override nonReentrant whenNotPaused {
         require(amount > 0, "Treasury: zero amount");
         balances[token] += amount;
         IERC20(token).safeTransferFrom(msg.sender, address(this), amount);

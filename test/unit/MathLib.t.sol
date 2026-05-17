@@ -33,10 +33,7 @@ contract MathLibTest is Test {
         inputs[4] = type(uint128).max;
 
         for (uint256 i = 0; i < inputs.length; i++) {
-            assertEq(
-                mathLib.sqrtAssembly(inputs[i]),
-                mathLib.sqrtSolidity(inputs[i])
-            );
+            assertEq(mathLib.sqrtAssembly(inputs[i]), mathLib.sqrtSolidity(inputs[i]));
         }
     }
 

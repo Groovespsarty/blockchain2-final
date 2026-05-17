@@ -1,35 +1,29 @@
 name: CI
 
-permissions: {}
-
 on:
   push:
+    branches: ["main"]
   pull_request:
-  workflow_dispatch:
+    branches: ["main"]
 
 jobs:
-  check:
-    name: Foundry project
+  test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
-          persist-credentials: false
           submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
 
-      - name: Show Forge version
-        run: forge --version
+      - name: Compile
+        run: forge build
 
-      - name: Run Forge fmt
+      - name: Run tests
+        run: forge test --fork-url https://eth-mainnet.g.alchemy.com/v2/QJdF0MmlcYioIOEoAnqAU
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Check formatting
         run: forge fmt --check
-
-      - name: Run Forge build
-        run: forge build --sizes
-
-      - name: Run Forge tests
-        run: forge test -vvv

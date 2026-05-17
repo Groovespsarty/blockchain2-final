@@ -3,7 +3,6 @@ pragma solidity ^0.8.24;
 
 /// @title MathLib — Yul assembly math utilities, benchmarked vs Solidity
 contract MathLib {
-
     /// @notice Square root via Yul assembly (Babylonian method)
     function sqrtAssembly(uint256 x) external pure returns (uint256 z) {
         assembly {

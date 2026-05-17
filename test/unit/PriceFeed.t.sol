@@ -17,16 +17,21 @@ contract MockAggregator {
         roundId = 1;
     }
 
-    function setPrice(int256 _price) external { price = _price; }
-    function setUpdatedAt(uint256 _updatedAt) external { updatedAt = _updatedAt; }
+    function setPrice(int256 _price) external {
+        price = _price;
+    }
 
-    function latestRoundData() external view returns (
-        uint80, int256, uint256, uint256, uint80
-    ) {
+    function setUpdatedAt(uint256 _updatedAt) external {
+        updatedAt = _updatedAt;
+    }
+
+    function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80) {
         return (roundId, price, block.timestamp, updatedAt, roundId);
     }
 
-    function decimals() external view returns (uint8) { return dec; }
+    function decimals() external view returns (uint8) {
+        return dec;
+    }
 }
 
 contract PriceFeedTest is Test {

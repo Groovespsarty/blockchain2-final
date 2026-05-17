@@ -41,10 +41,8 @@ contract Deploy is Script {
         DeFiTimelock timelock = new DeFiTimelock(proposers, executors, deployer);
         console.log("Timelock:", address(timelock));
 
-        DeFiGovernor governor = new DeFiGovernor(
-            IVotes(address(govToken)),
-            TimelockController(payable(address(timelock)))
-        );
+        DeFiGovernor governor =
+            new DeFiGovernor(IVotes(address(govToken)), TimelockController(payable(address(timelock))));
         console.log("Governor:", address(governor));
 
         timelock.grantRole(timelock.PROPOSER_ROLE(), address(governor));
@@ -52,9 +50,7 @@ contract Deploy is Script {
         timelock.revokeRole(timelock.DEFAULT_ADMIN_ROLE(), deployer);
 
         TreasuryV1 impl = new TreasuryV1();
-        bytes memory initData = abi.encodeWithSelector(
-            TreasuryV1.initialize.selector, address(timelock)
-        );
+        bytes memory initData = abi.encodeWithSelector(TreasuryV1.initialize.selector, address(timelock));
         address treasury = address(new ERC1967Proxy(address(impl), initData));
         console.log("Treasury:", treasury);
 

@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MockERC20 is ERC20 {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
+
     function mint(address to, uint256 amount) external {
         _mint(to, amount);
     }
@@ -26,9 +27,7 @@ contract TreasuryTest is Test {
 
         // Deploy via UUPS proxy
         TreasuryV1 impl = new TreasuryV1();
-        bytes memory initData = abi.encodeWithSelector(
-            TreasuryV1.initialize.selector, owner
-        );
+        bytes memory initData = abi.encodeWithSelector(TreasuryV1.initialize.selector, owner);
         ERC1967Proxy proxy = new ERC1967Proxy(address(impl), initData);
         treasury = TreasuryV1(address(proxy));
 

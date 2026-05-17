@@ -7,7 +7,10 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MockERC20 is ERC20 {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
-    function mint(address to, uint256 amount) external { _mint(to, amount); }
+
+    function mint(address to, uint256 amount) external {
+        _mint(to, amount);
+    }
 }
 
 contract VaultHandler is Test {
@@ -71,9 +74,9 @@ contract VaultInvariantTest is Test {
     }
 
     /// @notice Total supply > 0 when assets > 0
-function invariant_SupplyPositiveWhenAssets() public view {
-    if (vault.totalSupply() > 0) {
-        assertGt(vault.totalAssets(), 0);
+    function invariant_SupplyPositiveWhenAssets() public view {
+        if (vault.totalSupply() > 0) {
+            assertGt(vault.totalAssets(), 0);
+        }
     }
-}
 }

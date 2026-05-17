@@ -74,14 +74,24 @@ contract GovTokenTest is Test {
         uint256 deadline = block.timestamp + 1 hours;
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(
             privateKey,
-            keccak256(abi.encodePacked(
-                "\x19\x01",
-                token.DOMAIN_SEPARATOR(),
-                keccak256(abi.encode(
-                    keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"),
-                    signer, bob, 50e18, token.nonces(signer), deadline
-                ))
-            ))
+            keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    token.DOMAIN_SEPARATOR(),
+                    keccak256(
+                        abi.encode(
+                            keccak256(
+                                "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+                            ),
+                            signer,
+                            bob,
+                            50e18,
+                            token.nonces(signer),
+                            deadline
+                        )
+                    )
+                )
+            )
         );
 
         token.permit(signer, bob, 50e18, deadline, v, r, s);

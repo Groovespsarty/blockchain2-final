@@ -3,13 +3,10 @@ pragma solidity ^0.8.24;
 
 /// @title AggregatorV3Interface — Chainlink price feed interface
 interface AggregatorV3Interface {
-    function latestRoundData() external view returns (
-        uint80 roundId,
-        int256 answer,
-        uint256 startedAt,
-        uint256 updatedAt,
-        uint80 answeredInRound
-    );
+    function latestRoundData()
+        external
+        view
+        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
     function decimals() external view returns (uint8);
 }
 
@@ -29,13 +26,7 @@ contract PriceFeed {
 
     /// @notice Returns latest price, reverts if stale
     function getPrice() external view returns (int256 price, uint256 updatedAt) {
-        (
-            uint80 roundId,
-            int256 answer,
-            ,
-            uint256 timestamp,
-            uint80 answeredInRound
-        ) = feed.latestRoundData();
+        (uint80 roundId, int256 answer,, uint256 timestamp, uint80 answeredInRound) = feed.latestRoundData();
 
         // Staleness check
         require(timestamp > 0, "PriceFeed: round not complete");

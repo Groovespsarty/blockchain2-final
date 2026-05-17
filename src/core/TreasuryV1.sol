@@ -39,9 +39,7 @@ contract TreasuryV1 is UUPSUpgradeable, OwnableUpgradeable {
         emit Deposited(token, msg.sender, amount);
     }
 
-    function withdraw(address token, address to, uint256 amount)
-        external onlyOwner nonReentrant
-    {
+    function withdraw(address token, address to, uint256 amount) external onlyOwner nonReentrant {
         require(amount > 0, "Treasury: zero amount");
         require(balances[token] >= amount, "Treasury: insufficient balance");
         balances[token] -= amount;
@@ -53,6 +51,5 @@ contract TreasuryV1 is UUPSUpgradeable, OwnableUpgradeable {
         return "V1";
     }
 
-    function _authorizeUpgrade(address newImplementation)
-        internal override onlyOwner {}
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }

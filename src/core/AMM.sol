@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
 /// @title AMM — Constant product AMM (x*y=k) with 0.3% fee
 contract AMM is ERC20, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -21,17 +22,13 @@ contract AMM is ERC20, ReentrancyGuard {
     event LiquidityRemoved(address indexed provider, uint256 amountA, uint256 amountB, uint256 shares);
     event Swap(address indexed user, address tokenIn, uint256 amountIn, uint256 amountOut);
 
-    constructor(address _tokenA, address _tokenB)
-        ERC20("AMM LP Token", "LP")
-    {
+    constructor(address _tokenA, address _tokenB) ERC20("AMM LP Token", "LP") {
         tokenA = IERC20(_tokenA);
         tokenB = IERC20(_tokenB);
     }
 
     /// @notice Add liquidity and receive LP tokens
-    function addLiquidity(uint256 amountA, uint256 amountB)
-        external nonReentrant returns (uint256 shares)
-    {
+    function addLiquidity(uint256 amountA, uint256 amountB) external nonReentrant returns (uint256 shares) {
         // Checks
         require(amountA > 0 && amountB > 0, "AMM: zero amount");
 
@@ -40,10 +37,7 @@ contract AMM is ERC20, ReentrancyGuard {
         if (totalSupply_ == 0) {
             shares = _sqrt(amountA * amountB);
         } else {
-            shares = _min(
-                (amountA * totalSupply_) / reserveA,
-                (amountB * totalSupply_) / reserveB
-            );
+            shares = _min((amountA * totalSupply_) / reserveA, (amountB * totalSupply_) / reserveB);
         }
         require(shares > 0, "AMM: zero shares");
 
@@ -59,9 +53,7 @@ contract AMM is ERC20, ReentrancyGuard {
     }
 
     /// @notice Remove liquidity by burning LP tokens
-    function removeLiquidity(uint256 shares)
-        external nonReentrant returns (uint256 amountA, uint256 amountB)
-    {
+    function removeLiquidity(uint256 shares) external nonReentrant returns (uint256 amountA, uint256 amountB) {
         // Checks
         require(shares > 0, "AMM: zero shares");
         uint256 totalSupply_ = totalSupply();
@@ -84,21 +76,20 @@ contract AMM is ERC20, ReentrancyGuard {
 
     /// @notice Swap tokenA for tokenB or vice versa
     function swap(address _tokenIn, uint256 amountIn, uint256 minAmountOut)
-        external nonReentrant returns (uint256 amountOut)
+        external
+        nonReentrant
+        returns (uint256 amountOut)
     {
         // Checks
         require(_tokenIn == address(tokenA) || _tokenIn == address(tokenB), "AMM: invalid token");
         require(amountIn > 0, "AMM: zero input");
 
         bool isTokenA = _tokenIn == address(tokenA);
-        (uint256 reserveIn, uint256 reserveOut) = isTokenA
-            ? (reserveA, reserveB)
-            : (reserveB, reserveA);
+        (uint256 reserveIn, uint256 reserveOut) = isTokenA ? (reserveA, reserveB) : (reserveB, reserveA);
 
         // Effects — apply 0.3% fee
         uint256 amountInWithFee = amountIn * FEE_NUMERATOR;
-        amountOut = (amountInWithFee * reserveOut) /
-            (reserveIn * FEE_DENOMINATOR + amountInWithFee);
+        amountOut = (amountInWithFee * reserveOut) / (reserveIn * FEE_DENOMINATOR + amountInWithFee);
 
         require(amountOut >= minAmountOut, "AMM: slippage exceeded");
 
@@ -121,7 +112,10 @@ contract AMM is ERC20, ReentrancyGuard {
         if (y > 3) {
             z = y;
             uint256 x = y / 2 + 1;
-            while (x < z) { z = x; x = (y / x + x) / 2; }
+            while (x < z) {
+                z = x;
+                x = (y / x + x) / 2;
+            }
         } else if (y != 0) {
             z = 1;
         }
