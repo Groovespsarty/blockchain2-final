@@ -1,0 +1,55 @@
+type Swap @entity {
+  id: ID!
+  user: Bytes!
+  tokenIn: Bytes!
+  amountIn: BigInt!
+  amountOut: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+}
+
+type LiquidityAdd @entity {
+  id: ID!
+  provider: Bytes!
+  amountA: BigInt!
+  amountB: BigInt!
+  shares: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+}
+
+type LiquidityRemove @entity {
+  id: ID!
+  provider: Bytes!
+  amountA: BigInt!
+  amountB: BigInt!
+  shares: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+}
+
+type Pool @entity {
+  id: ID!
+  totalSwaps: BigInt!
+  totalVolumeA: BigInt!
+  totalVolumeB: BigInt!
+  lastUpdated: BigInt!
+}
+
+type TokenTransfer @entity {
+  id: ID!
+  from: Bytes!
+  to: Bytes!
+  amount: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+}
+
+type DelegateChanged @entity {
+  id: ID!
+  delegator: Bytes!
+  fromDelegate: Bytes!
+  toDelegate: Bytes!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+}
