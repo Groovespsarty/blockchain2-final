@@ -128,4 +128,47 @@ contract TreasuryTest is Test {
         vm.expectRevert("Treasury: zero amount");
         treasury.withdraw(address(token), alice, 0);
     }
+
+    function test_V2_Unpause() public {
+    TreasuryV2 implV2 = new TreasuryV2();
+    vm.prank(owner);
+    treasury.upgradeToAndCall(address(implV2), "");
+    TreasuryV2 treasuryV2 = TreasuryV2(address(treasury));
+
+    vm.startPrank(owner);
+    treasuryV2.pause();
+    treasuryV2.unpause();
+    vm.stopPrank();
+
+    assertEq(treasuryV2.paused(), false);
+}
+
+function test_V2_DepositAfterUnpause() public {
+    TreasuryV2 implV2 = new TreasuryV2();
+    vm.prank(owner);
+    treasury.upgradeToAndCall(address(implV2), "");
+    TreasuryV2 treasuryV2 = TreasuryV2(address(treasury));
+
+    vm.prank(owner);
+    treasuryV2.pause();
+
+    vm.prank(owner);
+    treasuryV2.unpause();
+
+    vm.startPrank(alice);
+    token.approve(address(treasuryV2), 1000e18);
+    treasuryV2.deposit(address(token), 1000e18);
+    vm.stopPrank();
+
+    assertEq(treasuryV2.balances(address(token)), 1000e18);
+}
+
+function test_V2_Version() public {
+    TreasuryV2 implV2 = new TreasuryV2();
+    vm.prank(owner);
+    treasury.upgradeToAndCall(address(implV2), "");
+    TreasuryV2 treasuryV2 = TreasuryV2(address(treasury));
+    assertEq(treasuryV2.version(), "V2");
+}
+
 }
