@@ -18,6 +18,7 @@ contract AMMHandler is Test {
     AMM public amm;
     MockERC20 public tokenA;
     MockERC20 public tokenB;
+    bool public kNeverDecreasedOnSwap = true;
 
     address user = makeAddr("user");
 
@@ -38,6 +39,7 @@ contract AMMHandler is Test {
 
     function swap(uint256 amountIn, bool aForB) external {
         amountIn = bound(amountIn, 1e15, 100e18);
+        uint256 kBefore = amm.reserveA() * amm.reserveB();
         vm.startPrank(user);
         if (aForB) {
             amm.swap(address(tokenA), amountIn, 0);
@@ -45,6 +47,10 @@ contract AMMHandler is Test {
             amm.swap(address(tokenB), amountIn, 0);
         }
         vm.stopPrank();
+        uint256 kAfter = amm.reserveA() * amm.reserveB();
+        if (kAfter < kBefore) {
+            kNeverDecreasedOnSwap = false;
+        }
     }
 
     function addLiquidity(uint256 amountA, uint256 amountB) external {
@@ -102,5 +108,10 @@ contract AMMInvariantTest is Test {
             assertGt(amm.reserveA(), 0);
             assertGt(amm.reserveB(), 0);
         }
+    }
+
+    /// @notice Constant-product k must never decrease as a result of a swap.
+    function invariant_KNeverDecreasesOnSwap() public view {
+        assertTrue(handler.kNeverDecreasedOnSwap());
     }
 }

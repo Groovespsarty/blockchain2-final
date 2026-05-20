@@ -130,30 +130,29 @@ contract YieldVaultTest is Test {
     }
 
     function test_Mint() public {
-    vm.startPrank(alice);
-    asset.approve(address(vault), 1000e18);
-    uint256 shares = vault.mint(1000e18, alice);
-    vm.stopPrank();
-    assertGt(shares, 0);
-}
+        vm.startPrank(alice);
+        asset.approve(address(vault), 1000e18);
+        uint256 shares = vault.mint(1000e18, alice);
+        vm.stopPrank();
+        assertGt(shares, 0);
+    }
 
-function test_PreviewDeposit() public view {
-    uint256 preview = vault.previewDeposit(1000e18);
-    assertGt(preview, 0);
-}
+    function test_PreviewDeposit() public view {
+        uint256 preview = vault.previewDeposit(1000e18);
+        assertGt(preview, 0);
+    }
 
-function test_ConvertToAssets() public {
-    vm.startPrank(alice);
-    asset.approve(address(vault), 1000e18);
-    uint256 shares = vault.deposit(1000e18, alice);
-    vm.stopPrank();
-    uint256 assets = vault.convertToAssets(shares);
-    assertGt(assets, 0);
-}
+    function test_ConvertToAssets() public {
+        vm.startPrank(alice);
+        asset.approve(address(vault), 1000e18);
+        uint256 shares = vault.deposit(1000e18, alice);
+        vm.stopPrank();
+        uint256 assets = vault.convertToAssets(shares);
+        assertGt(assets, 0);
+    }
 
-function test_ConvertToShares() public view {
-    uint256 shares = vault.convertToShares(1000e18);
-    assertGt(shares, 0);
-}
-
+    function test_ConvertToShares() public view {
+        uint256 shares = vault.convertToShares(1000e18);
+        assertGt(shares, 0);
+    }
 }

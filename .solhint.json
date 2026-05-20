@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "avoid-tx-origin": "error",
+    "avoid-low-level-calls": "off",
+    "compiler-version": "off",
+    "func-name-mixedcase": "off",
+    "not-rely-on-time": "off",
+    "no-console": "off"
+  }
+}

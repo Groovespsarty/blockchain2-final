@@ -1,84 +1,144 @@
-# DeFi Super-App — Blockchain Technologies 2 Final Project
+# DeFi Super-App - Blockchain Technologies 2 Final Project
 
-## Overview
-A production-grade decentralized protocol implementing an AMM + Lending Protocol + Tokenized Yield Vault, governed by a DAO, deployed on Arbitrum Sepolia.
+Full-stack decentralized protocol for the Blockchain Technologies 2 capstone. The project implements Option A: an AMM, lending pool, ERC-4626 yield vault, Chainlink oracle integration, DAO governance, The Graph indexing, and an Arbitrum Sepolia deployment path.
 
 ## Team
-- Member 1: Smart Contracts (AMM, Vault, Governance)
-- Member 2: Testing, Frontend, Deployment
 
-## Deployed Contracts (Arbitrum Sepolia)
+- Tulegenov Alimzhan: smart contracts, AMM, vault, governance, oracles
+- Askhat Amirkhanov: testing, frontend, deployment, documentation
 
-| Contract | Address | Verified |
-|----------|---------|---------|
-| GovToken | [0x518f029A4E7BE8B9CE5bDd7188E80eA71B404b63](https://sepolia.arbiscan.io/address/0x518f029A4E7BE8B9CE5bDd7188E80eA71B404b63) | ✅ |
-| Timelock | [0x3a56Af5D7F6c768A052a348840bBe182C139Cbf7](https://sepolia.arbiscan.io/address/0x3a56Af5D7F6c768A052a348840bBe182C139Cbf7) | ✅ |
-| Governor | [0x7309A96DE45c3e1f70b59c4FE205786Bf50DE8ac](https://sepolia.arbiscan.io/address/0x7309A96DE45c3e1f70b59c4FE205786Bf50DE8ac) | ✅ |
-| Treasury (Proxy) | [0xfcf24222be9a73de841F4Fd93460361439CF38Fa](https://sepolia.arbiscan.io/address/0xfcf24222be9a73de841F4Fd93460361439CF38Fa) | ✅ |
-| AMMFactory | [0x01128Fd657aa77A08E5FDc0FB36BA9C8669438b5](https://sepolia.arbiscan.io/address/0x01128Fd657aa77A08E5FDc0FB36BA9C8669438b5) | ✅ |
-| WETH/USDC Pool | [0x8F5856FF91503BcE897712952D9152cd424EFB24](https://sepolia.arbiscan.io/address/0x8F5856FF91503BcE897712952D9152cd424EFB24) | ✅ |
-| YieldVault | [0x207Cb0DD0567f8F861b4F16785fc9034E1e2CF9F](https://sepolia.arbiscan.io/address/0x207Cb0DD0567f8F861b4F16785fc9034E1e2CF9F) | ✅ |
-| PriceFeed | [0xF692D60C6F99Cff9012EA9794A72dfb98F66B27F](https://sepolia.arbiscan.io/address/0xF692D60C6F99Cff9012EA9794A72dfb98F66B27F) | ✅ |
-| MathLib | [0xF9B7f7Eeeb159061a2C0C4B1a3F7033d150187ad](https://sepolia.arbiscan.io/address/0xF9B7f7Eeeb159061a2C0C4B1a3F7033d150187ad) | ✅ |
+## Protocol Components
 
-## Architecture
+| Component | Contract / Artifact |
+|---|---|
+| Governance token | `src/tokens/GovToken.sol` - ERC20Votes + ERC20Permit |
+| NFT standard | `src/tokens/ProtocolBadge.sol` - ERC721 badge token |
+| AMM | `src/core/AMM.sol` - x*y=k pool, 0.3% fee, slippage protection, LP token |
+| Lending | `src/core/LendingPool.sol` - collateral, borrow, repay, health factor, liquidation, linear interest |
+| Vault | `src/core/YieldVault.sol` - ERC4626 tokenized yield vault |
+| Upgradeability | `src/core/TreasuryV1.sol` -> `src/core/TreasuryV2.sol` via UUPS proxy |
+| Factory | `src/factories/AMMFactory.sol` - CREATE and CREATE2 deployment |
+| Oracle | `src/oracles/PriceFeed.sol` - Chainlink adapter with staleness checks |
+| Governance | `DeFiGovernor` + `DeFiTimelock`, 2-day timelock delay |
+| Indexing | `subgraph/` - AMM, token, and Governor event indexing |
+| Frontend | `frontend/` - MetaMask dApp with AMM, vault, and governance actions |
 
-### Smart Contracts
-- GovToken — ERC20Votes + ERC20Permit governance token
-- DeFiTimelock — 2-day delay TimelockController
-- DeFiGovernor — OpenZeppelin Governor (1 day voting delay, 1 week period, 4% quorum)
-- AMM — Constant product AMM (x*y=k) with 0.3% fee, LP tokens
-- YieldVault — ERC-4626 tokenized yield vault
-- TreasuryV1/V2 — UUPS upgradeable treasury (V1→V2 upgrade path demonstrated)
-- AMMFactory — Factory using CREATE and CREATE2
-- PriceFeed — Chainlink oracle adapter with staleness check
-- MathLib — Yul assembly math utilities
+## Governance Parameters
 
-### Design Patterns Used
-1. Factory (AMMFactory — CREATE and CREATE2)
-2. Proxy / UUPS (TreasuryV1 → TreasuryV2)
-3. Checks-Effects-Interactions (AMM, YieldVault, Treasury)
-4. Access Control / Role-based (OpenZeppelin Ownable, AccessControl)
-5. Timelock (DeFiTimelock — 2-day governance delay)
-6. Reentrancy Guard (AMM, YieldVault)
-7. Oracle adapter (PriceFeed — Chainlink abstraction)
+- Voting delay: 1 day
+- Voting period: 1 week
+- Quorum: 4%
+- Proposal threshold: 10,000 DGT, equal to 1% of the initial 1,000,000 DGT supply
+- Timelock delay: 2 days
+- Treasury owner after deployment: Timelock
+- GovToken owner after deployment: Timelock
 
-## Testing
+## Tests
 
-forge test
+```bash
+$env:MAINNET_RPC_URL="https://ethereum-rpc.publicnode.com"
+C:\Users\Alimzhan\.foundry\bin\forge.exe test
+```
 
+Latest local result:
 
-- 88 tests total: 56 unit, 10 fuzz, 5 invariant, 3 fork
-- Coverage: run forge coverage
-- All tests pass in CI
+- 129 tests passed
+- Unit-style tests: 101
+- Fuzz tests: 13
+- Invariant tests: 7
+- Fork tests: 4
+- Security case-study tests: 4
+
+Coverage report: `docs/coverage-report.md`.
 
 ## Deployment
 
+```bash
 cp .env.example .env
-# Fill in PRIVATE_KEY and ARBITRUM_SEPOLIA_RPC
-source .env
-forge script script/Deploy.s.sol --rpc-url $ARBITRUM_SEPOLIA_RPC --private-key $PRIVATE_KEY --broadcast
+# Fill PRIVATE_KEY, ARBITRUM_SEPOLIA_RPC, ARBISCAN_API_KEY, CHAINLINK_USDC_USD
+forge script script/Deploy.s.sol \
+  --rpc-url $ARBITRUM_SEPOLIA_RPC \
+  --private-key $PRIVATE_KEY \
+  --broadcast \
+  --verify
+```
 
+Post-deployment verification:
+
+```bash
+forge script script/VerifyDeployment.s.sol --rpc-url $ARBITRUM_SEPOLIA_RPC
+```
+
+The repository contains a previous Arbitrum Sepolia deployment in `deployments/arbitrum-sepolia.json`. Because the current implementation adds `LendingPool`, `ProtocolBadge`, and a hardened governance deployment path, a fresh deployment is required before final submission addresses are considered current.
 
 ## Frontend
 
+```bash
 cd frontend
 npm install
 npm run dev
+```
 
+Optional `.env.local` values:
 
-Open http://localhost:5173
+```bash
+VITE_SUBGRAPH_URL=https://api.studio.thegraph.com/query/your-subgraph
+VITE_GOV_TOKEN=0x...
+VITE_GOVERNOR=0x...
+VITE_AMM=0x...
+VITE_YIELD_VAULT=0x...
+VITE_WETH=0x...
+VITE_USDC=0x...
+```
+
+Frontend capabilities:
+
+- MetaMask connection and Arbitrum Sepolia network detection
+- DGT balance, voting power, delegate address
+- AMM reserves and wallet balances
+- Vault shares and total assets
+- State-changing actions: delegate, transfer, swap, add liquidity, deposit, vote
+- Proposal list and indexed swaps loaded from The Graph when `VITE_SUBGRAPH_URL` is set
+- Readable errors for rejected transactions, wrong network, and insufficient balances
+
+## Subgraph
+
+```bash
+cd subgraph
+npm install
+npm run codegen
+npm run build
+```
+
+The subgraph indexes:
+
+- `Swap`
+- `LiquidityAdd`
+- `LiquidityRemove`
+- `Pool`
+- `TokenTransfer`
+- `DelegateChanged`
+- `Proposal`
+- `VoteCast`
+
+Documented GraphQL queries are in `subgraph/queries.md`.
 
 ## CI
-GitHub Actions runs on every push: compile → test → coverage → format check.
 
-## Gas Comparison (L1 vs L2)
+GitHub Actions runs on push and pull request:
 
-| Operation | L1 Ethereum (est.) | Arbitrum Sepolia |
-|-----------|-------------------|-----------------|
-| Deploy GovToken | ~$15-20 | $0.00078 |
-| Deploy AMM | ~$25-30 | $0.00046 |
-| Swap | ~$5-10 | $0.00002 |
-| Add Liquidity | ~$8-12 | $0.00004 |
-| Deposit Vault | ~$3-5 | $0.00002 |
-| Transfer Token | ~$1-2 | $0.000005 |
+- Foundry build
+- Foundry tests
+- Forge coverage
+- `forge fmt --check`
+- Solhint
+- Slither, failing on Medium or higher
+- Frontend `npm ci`, ESLint, Prettier, and Vite build
+
+## Documentation
+
+- Architecture: `docs/architecture.md`
+- Security audit: `docs/audit.md`
+- Coverage: `docs/coverage-report.md`
+- Gas optimization: `docs/gas-optimization.md`
+- Final presentation: `docs/final-presentation.pdf`

@@ -1,4 +1,4 @@
-type Swap @entity {
+type Swap @entity(immutable: true) {
   id: ID!
   user: Bytes!
   tokenIn: Bytes!
@@ -8,7 +8,7 @@ type Swap @entity {
   blockNumber: BigInt!
 }
 
-type LiquidityAdd @entity {
+type LiquidityAdd @entity(immutable: true) {
   id: ID!
   provider: Bytes!
   amountA: BigInt!
@@ -18,7 +18,7 @@ type LiquidityAdd @entity {
   blockNumber: BigInt!
 }
 
-type LiquidityRemove @entity {
+type LiquidityRemove @entity(immutable: true) {
   id: ID!
   provider: Bytes!
   amountA: BigInt!
@@ -28,7 +28,7 @@ type LiquidityRemove @entity {
   blockNumber: BigInt!
 }
 
-type Pool @entity {
+type Pool @entity(immutable: false) {
   id: ID!
   totalSwaps: BigInt!
   totalVolumeA: BigInt!
@@ -36,7 +36,7 @@ type Pool @entity {
   lastUpdated: BigInt!
 }
 
-type TokenTransfer @entity {
+type TokenTransfer @entity(immutable: true) {
   id: ID!
   from: Bytes!
   to: Bytes!
@@ -45,11 +45,36 @@ type TokenTransfer @entity {
   blockNumber: BigInt!
 }
 
-type DelegateChanged @entity {
+type DelegateChanged @entity(immutable: true) {
   id: ID!
   delegator: Bytes!
   fromDelegate: Bytes!
   toDelegate: Bytes!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+}
+
+type Proposal @entity(immutable: false) {
+  id: ID!
+  proposer: Bytes!
+  description: String!
+  voteStart: BigInt!
+  voteEnd: BigInt!
+  state: String!
+  createdAt: BigInt!
+  queuedAt: BigInt
+  executedAt: BigInt
+  canceledAt: BigInt
+  votes: [VoteCast!]! @derivedFrom(field: "proposal")
+}
+
+type VoteCast @entity(immutable: true) {
+  id: ID!
+  proposal: Proposal!
+  voter: Bytes!
+  support: Int!
+  weight: BigInt!
+  reason: String!
   timestamp: BigInt!
   blockNumber: BigInt!
 }

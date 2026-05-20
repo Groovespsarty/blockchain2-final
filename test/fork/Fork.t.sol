@@ -13,17 +13,25 @@ interface IERC20Full {
     function decimals() external view returns (uint8);
 }
 
+interface IUniswapV2Router {
+    function factory() external view returns (address);
+    function WETH() external view returns (address);
+}
+
 contract ForkTest is Test {
     // Mainnet addresses
     address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     address constant CHAINLINK_ETH_USD = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
     address constant USDC_WHALE = 0x37305B1cD40574E4C5Ce33f8e8306Be057fD7341;
+    address constant UNISWAP_V2_ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    address constant UNISWAP_V2_FACTORY = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
 
     uint256 mainnetFork;
 
     function setUp() public {
-        mainnetFork = vm.createFork("https://eth-mainnet.g.alchemy.com/v2/QJdF0MmlcYioIOEoAnqAU");
+        string memory rpcUrl = vm.envOr("MAINNET_RPC_URL", string("https://ethereum-rpc.publicnode.com"));
+        mainnetFork = vm.createFork(rpcUrl);
         vm.selectFork(mainnetFork);
     }
 
@@ -49,8 +57,6 @@ contract ForkTest is Test {
         vm.startPrank(USDC_WHALE);
 
         IERC20Full usdc = IERC20Full(USDC);
-        IERC20Full weth = IERC20Full(WETH);
-
         uint256 usdcBalance = usdc.balanceOf(USDC_WHALE);
         assertGt(usdcBalance, 0);
 
@@ -65,5 +71,12 @@ contract ForkTest is Test {
         // Verify AMM was deployed correctly
         assertEq(address(amm.tokenA()), USDC);
         assertEq(address(amm.tokenB()), WETH);
+    }
+
+    /// @notice Fork test 4: Interacts with real Uniswap V2 router metadata
+    function test_Fork_UniswapV2Router() public view {
+        IUniswapV2Router router = IUniswapV2Router(UNISWAP_V2_ROUTER);
+        assertEq(router.WETH(), WETH);
+        assertEq(router.factory(), UNISWAP_V2_FACTORY);
     }
 }

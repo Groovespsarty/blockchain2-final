@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/// @title AggregatorV3Interface — Chainlink price feed interface
+/// @title AggregatorV3Interface - Chainlink price feed interface
 interface AggregatorV3Interface {
     function latestRoundData()
         external
@@ -10,7 +10,7 @@ interface AggregatorV3Interface {
     function decimals() external view returns (uint8);
 }
 
-/// @title PriceFeed — Chainlink oracle adapter with staleness check
+/// @title PriceFeed - Chainlink oracle adapter with staleness check
 contract PriceFeed {
     AggregatorV3Interface public immutable feed;
     uint256 public immutable stalenessThreshold;
@@ -26,10 +26,11 @@ contract PriceFeed {
 
     /// @notice Returns latest price, reverts if stale
     function getPrice() external view returns (int256 price, uint256 updatedAt) {
-        (uint80 roundId, int256 answer,, uint256 timestamp, uint80 answeredInRound) = feed.latestRoundData();
+        (uint80 roundId, int256 answer, uint256 startedAt, uint256 timestamp, uint80 answeredInRound) =
+            feed.latestRoundData();
 
-        // Staleness check
         require(timestamp > 0, "PriceFeed: round not complete");
+        require(startedAt <= timestamp, "PriceFeed: invalid round time");
         require(block.timestamp - timestamp <= stalenessThreshold, "PriceFeed: stale price");
         require(answeredInRound >= roundId, "PriceFeed: stale round");
         require(answer > 0, "PriceFeed: invalid price");

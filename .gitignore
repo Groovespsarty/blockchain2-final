@@ -2,6 +2,12 @@
 cache/
 out/
 
+# JavaScript dependencies and build output
+node_modules/
+frontend/dist/
+subgraph/build/
+subgraph/generated/
+
 # Commonly ignored directories
 .logs/
 .ignore/
@@ -11,12 +17,7 @@ out/
 /broadcast/*/31337/
 /broadcast/**/dry-run/
 
-# Docs
-docs/
-
 # Dotenv file
 .env
 .env.*
 !.env.example
-.env
-.env

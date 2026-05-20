@@ -19,7 +19,7 @@ contract DeFiGovernor is
 {
     constructor(IVotes _token, TimelockController _timelock)
         Governor("DeFiGovernor")
-        GovernorSettings(1 days, 1 weeks, 1e18)
+        GovernorSettings(1 days, 1 weeks, 10_000e18)
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(4)
         GovernorTimelockControl(_timelock)

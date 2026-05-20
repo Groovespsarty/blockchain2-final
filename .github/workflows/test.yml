@@ -21,9 +21,51 @@ jobs:
         run: forge build
 
       - name: Run tests
-        run: forge test --fork-url https://eth-mainnet.g.alchemy.com/v2/QJdF0MmlcYioIOEoAnqAU
+        run: forge test
         env:
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL }}
+
+      - name: Coverage
+        run: forge coverage --ir-minimum --report summary
+        env:
+          MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL }}
 
       - name: Check formatting
         run: forge fmt --check
+
+      - name: Solhint
+        run: npx solhint "src/**/*.sol" "script/**/*.sol"
+
+      - name: Slither
+        uses: crytic/slither-action@v0.4.1
+        with:
+          target: src
+          fail-on: medium
+
+      - name: Frontend install
+        working-directory: frontend
+        run: npm ci
+
+      - name: Frontend lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Frontend prettier
+        working-directory: frontend
+        run: npm run format:check
+
+      - name: Frontend build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Subgraph install
+        working-directory: subgraph
+        run: npm ci
+
+      - name: Subgraph codegen
+        working-directory: subgraph
+        run: npm run codegen
+
+      - name: Subgraph build
+        working-directory: subgraph
+        run: npm run build

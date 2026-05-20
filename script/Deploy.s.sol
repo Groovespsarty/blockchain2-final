@@ -6,11 +6,13 @@ import "../src/tokens/GovToken.sol";
 import "../src/governance/DeFiTimelock.sol";
 import "../src/governance/DeFiGovernor.sol";
 import "../src/core/AMM.sol";
+import "../src/core/LendingPool.sol";
 import "../src/core/YieldVault.sol";
 import "../src/core/TreasuryV1.sol";
 import "../src/core/MathLib.sol";
 import "../src/factories/AMMFactory.sol";
 import "../src/oracles/PriceFeed.sol";
+import "../src/tokens/ProtocolBadge.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 contract Deploy is Script {
@@ -23,13 +25,13 @@ contract Deploy is Script {
         address deployer = vm.addr(deployerPrivateKey);
         vm.startBroadcast(deployerPrivateKey);
 
-        address govToken = _deployGovernance(deployer);
-        _deployCore(govToken);
+        (address timelock,) = _deployGovernance(deployer);
+        _deployCore(timelock);
 
         vm.stopBroadcast();
     }
 
-    function _deployGovernance(address deployer) internal returns (address) {
+    function _deployGovernance(address deployer) internal returns (address timelockAddress, address treasuryAddress) {
         GovToken govToken = new GovToken(deployer);
         console.log("GovToken:", address(govToken));
 
@@ -47,28 +49,46 @@ contract Deploy is Script {
 
         timelock.grantRole(timelock.PROPOSER_ROLE(), address(governor));
         timelock.grantRole(timelock.CANCELLER_ROLE(), address(governor));
+        timelock.revokeRole(timelock.PROPOSER_ROLE(), deployer);
         timelock.revokeRole(timelock.DEFAULT_ADMIN_ROLE(), deployer);
+        govToken.transferOwnership(address(timelock));
 
         TreasuryV1 impl = new TreasuryV1();
         bytes memory initData = abi.encodeWithSelector(TreasuryV1.initialize.selector, address(timelock));
         address treasury = address(new ERC1967Proxy(address(impl), initData));
         console.log("Treasury:", treasury);
 
-        return address(govToken);
+        return (address(timelock), treasury);
     }
 
-    function _deployCore(address) internal {
+    function _deployCore(address timelock) internal {
+        address chainlinkUsdcUsd = vm.envOr("CHAINLINK_USDC_USD", CHAINLINK_ETH_USD);
+
         AMMFactory factory = new AMMFactory();
         console.log("AMMFactory:", address(factory));
 
         address pool = factory.createPool(WETH, USDC);
         console.log("WETH/USDC Pool:", pool);
 
-        YieldVault vault = new YieldVault(IERC20(USDC), msg.sender);
+        YieldVault vault = new YieldVault(IERC20(USDC), timelock);
         console.log("YieldVault:", address(vault));
 
-        PriceFeed priceFeed = new PriceFeed(CHAINLINK_ETH_USD, 1 hours);
-        console.log("PriceFeed:", address(priceFeed));
+        PriceFeed ethPriceFeed = new PriceFeed(CHAINLINK_ETH_USD, 1 hours);
+        console.log("ETH PriceFeed:", address(ethPriceFeed));
+
+        PriceFeed usdcPriceFeed = new PriceFeed(chainlinkUsdcUsd, 1 hours);
+        console.log("USDC PriceFeed:", address(usdcPriceFeed));
+
+        LendingPool lendingPool = new LendingPool(
+            IERC20(WETH),
+            IERC20(USDC),
+            ILendingPriceFeed(address(ethPriceFeed)),
+            ILendingPriceFeed(address(usdcPriceFeed))
+        );
+        console.log("LendingPool:", address(lendingPool));
+
+        ProtocolBadge badge = new ProtocolBadge(timelock);
+        console.log("ProtocolBadge:", address(badge));
 
         MathLib mathLib = new MathLib();
         console.log("MathLib:", address(mathLib));
